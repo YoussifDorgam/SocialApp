@@ -1,0 +1,91 @@
+
+  void updateUserData({
+    String? name,
+    String? phone,
+    String? email,
+    String? bio,
+    String? coverImage,
+    String? profileImage,
+  }) {
+    emit(UpdateUserLoadingState());
+
+    UserModel model = UserModel(
+        uID: uId,
+        name: name,
+        phone: phone,
+        bio: bio,
+        email: email,
+        coverPic: coverImage,
+        profilePic: profileImage);
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(uId)
+        .update(model.toMap())
+        .then((value) {
+      getMyData();
+      emit(UpdateUserSuccessState());
+    }).catchError((error) {
+      print(error.toString());
+      emit(UpdateUserErrorState());
+    });
+  }
+ ///////////////////////////////////////////
+  String? coverPic;
+  void uploadCoverPic(String? name, String? phone, String? bio, String? email,
+      String? profile) {
+    firebase_storage.FirebaseStorage.instance
+        .ref()
+        .child(Uri.file(coverImage!.path).pathSegments.last)
+        .putFile(coverImage!)
+        .then((value) {
+      value.ref.getDownloadURL().then((value) {
+        updateUserData(
+          name: name,
+          phone: phone,
+          bio: bio,
+          email: email,
+          profileImage: profile,
+          coverImage: value,
+        );
+        emit(UploadCoverPicSuccessState());
+      }).catchError((error) {
+        print(error.toString());
+        emit(UploadCoverPicErrorState());
+      });
+      emit(UploadCoverPicSuccessState());
+    }).catchError((error) {
+      print(error.toString());
+      emit(UploadCoverPicErrorState());
+    });
+  }
+  ///////////////////////////////////////////////////
+   void uploadProfilePic(
+      String? name,
+      String? phone,
+      String? bio,
+      String? email,
+      String? coverImage,
+    ) {
+      firebase_storage.FirebaseStorage.instance
+          .ref()
+          .child(Uri.file(profileImage!.path).pathSegments.last)
+          .putFile(profileImage!)
+          .then((value) {
+        value.ref.getDownloadURL().then((value) {
+          updateUserData(
+              name: name,
+              phone: phone,
+              bio: bio,
+              coverImage: coverImage,
+              profileImage: value);
+          emit(UploadProfilePicSuccessState());
+        }).catchError((error) {
+          print(error.toString());
+          emit(UploadProfilePicErrorState());
+        });
+        emit(UploadProfilePicSuccessState());
+      }).catchError((error) {
+        print(error.toString());
+        emit(UploadProfilePicErrorState());
+      });
+    }

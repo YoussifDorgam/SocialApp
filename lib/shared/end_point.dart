@@ -1,0 +1,2 @@
+String? uid = '';
+String? text ;
